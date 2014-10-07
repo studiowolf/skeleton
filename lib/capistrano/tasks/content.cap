@@ -1,0 +1,30 @@
+namespace :media do
+
+  desc "Syncs uploads directory from local to remote"
+  task :sync do
+
+    run_locally do
+        roles(:all).each do |role|
+
+            execute :rsync, "-avzO #{role.user}@#{role.hostname}:#{shared_path}/content/uploads/ content/uploads"
+            execute :rsync, "-avzO content/uploads/ #{role.user}@#{role.hostname}:#{shared_path}/content/uploads"
+
+          end
+      end
+
+  end
+
+  desc "Regenerate the wordpress thumbnails on the remote server"
+  task :regenerate do
+
+    on roles(:web) do
+
+        within release_path do
+            execute :php, "wp-cli.phar media regenerate"
+        end
+
+    end
+
+  end
+
+end

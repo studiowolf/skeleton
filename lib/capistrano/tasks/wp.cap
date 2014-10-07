@@ -1,0 +1,160 @@
+namespace :wp do
+
+  task :set_permissions do
+    on roles(:app) do
+      execute :chmod, "666 #{shared_path}/.htaccess"
+      execute :chmod, "644 #{shared_path}/wp-config.php"
+      execute :chmod, "644 #{shared_path}/content/advanced-cache.php"
+      execute :chmod, "-R 777 #{shared_path}/content/cache"
+      execute :chmod, "-R 777 #{shared_path}/content/uploads"
+    end
+  end
+
+  namespace :setup do
+
+    desc "Generates wp-config.php on remote server"
+    task :generate_remote_files do
+      on roles(:web) do
+
+        # Get details for WordPress config file
+        secret_keys = capture("curl -s -k https://api.wordpress.org/secret-key/1.1/salt")
+        wp_siteurl = fetch(:stage_url) + '/wp'
+        wp_home = fetch(:stage_url)
+        theme = fetch(:theme)
+        environment = fetch(:stage)
+        database = YAML::load_file('config/database.yml')[fetch(:stage).to_s]
+
+        # Create config file in remote environment
+        db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
+        io = StringIO.new(db_config)
+        upload! io, File.join(shared_path, "wp-config.php")
+
+        # Create advanced cache file in remote environment
+        advanced_cache = ERB.new(File.read('config/templates/advanced-cache.php.erb')).result(binding)
+        io = StringIO.new(advanced_cache)
+        upload! io, File.join(shared_path, "content/advanced-cache.php")
+
+        # Create .htaccess in remote environment
+        accessfile = ERB.new(File.read('config/templates/.htaccess.erb')).result(binding)
+        io = StringIO.new(accessfile)
+        upload! io, File.join(shared_path, ".htaccess")
+      end
+      # Set some permissions
+      invoke 'wp:set_permissions'
+    end
+
+    desc "Setup WP on remote environment"
+    task :remote do
+      invoke 'deploy'
+      invoke 'wp:setup:generate_remote_files'
+      on roles(:web) do
+
+        within release_path do
+
+          if !fetch(:setup_all)
+            # Generate a random password
+            o = [(?a..?z), (?A..?Z)].map { |i| i.to_a }.flatten
+            password = (0...18).map { o[rand(o.length)] }.join
+          else
+            password = fetch(:wp_pass)
+          end
+
+          # Get WP details from config in /config
+          wp_siteurl = fetch(:stage_url) + '/wp'
+          wp_home = fetch(:stage_url)
+          theme = fetch(:theme)
+          environment = fetch(:stage)
+          title = fetch(:wp_sitename)
+          email = fetch(:wp_email)
+          user = fetch(:wp_user)
+
+          # Install WordPress
+          execute :wp, "core install --url='#{wp_siteurl}' --title='#{title}' --admin_user='#{user}' --admin_password='#{password}' --admin_email='#{email}'"
+
+          if !fetch(:setup_all)
+            puts <<-MSG
+            \e[32m
+            =========================================================================
+              WordPress has successfully been installed. Here are your login details:
+
+              Username:       #{user}
+              Password:       #{password}
+              Email address:  #{email}
+              Log in at:      #{wp_siteurl}/wordpress/wp-admin
+            =========================================================================
+            \e[0m
+            MSG
+          end
+
+        end
+
+      end
+    end
+
+    desc "Setup WP on local environment"
+    task :local do
+
+      # Download Wordpress
+      # Create config files
+      # The local wp-config file shoud have debug options enabled
+
+      run_locally do
+
+        if !fetch(:setup_all)
+          # Generate a random password
+          o = [(?a..?z), (?A..?Z)].map { |i| i.to_a }.flatten
+          password = (0...18).map { o[rand(o.length)] }.join
+        else
+          password = fetch(:wp_pass)
+        end
+
+        # Get WP details from config in /config
+        title = fetch(:wp_sitename)
+        email = fetch(:wp_email)
+        user = fetch(:wp_user)
+
+        wp_siteurl = fetch(:wp_localurl).gsub(/(.*):/, '\1.xip.io:') + '/wp'
+        wp_home = fetch(:wp_localurl)
+        theme = fetch(:theme)
+        environment = "local"
+
+        # Create wp-config.php
+        database = YAML::load_file('config/database.yml')['local']
+        secret_keys = capture("curl -s -k https://api.wordpress.org/secret-key/1.1/salt")
+        db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
+        File.open("wp-config.php", 'w') {|f| f.write(db_config) }
+
+        # Install WordPress
+        # execute :wp, "core install --url='#{wp_siteurl}' --title='#{title}' --admin_user='#{user}' --admin_password='#{password}' --admin_email='#{email}'"
+
+        puts <<-MSG
+        \e[32m
+        =========================================================================
+          WordPress has successfully been installed. Here are your login details:
+
+          Username:       #{user}
+          Password:       #{password}
+          Email address:  #{email}
+        =========================================================================
+        \e[0m
+        MSG
+
+      end
+    end
+
+    desc "Setup WP on remote and local environments"
+    task :both do
+      set :setup_all, true
+
+      # Generate a random password
+      o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
+      password = (0...18).map { o[rand(o.length)] }.join
+      set :wp_pass, password
+
+      # Setup remote and local envs
+      invoke "wp:setup:remote"
+      invoke "wp:setup:local"
+    end
+  end
+
+end
