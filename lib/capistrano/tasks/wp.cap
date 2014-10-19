@@ -4,7 +4,7 @@ namespace :wp do
     on roles(:app) do
       execute :chmod, "666 #{shared_path}/.htaccess"
       execute :chmod, "644 #{shared_path}/wp-config.php"
-      execute :chmod, "644 #{shared_path}/content/advanced-cache.php"
+      execute :chmod, "777 #{shared_path}/content/advanced-cache.php"
       execute :chmod, "-R 777 #{shared_path}/content/cache"
       execute :chmod, "-R 777 #{shared_path}/content/uploads"
     end
@@ -28,11 +28,6 @@ namespace :wp do
         db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
         io = StringIO.new(db_config)
         upload! io, File.join(shared_path, "wp-config.php")
-
-        # Create advanced cache file in remote environment
-        advanced_cache = ERB.new(File.read('config/templates/advanced-cache.php.erb')).result(binding)
-        io = StringIO.new(advanced_cache)
-        upload! io, File.join(shared_path, "content/advanced-cache.php")
 
         # Create .htaccess in remote environment
         accessfile = ERB.new(File.read('config/templates/.htaccess.erb')).result(binding)
