@@ -1,0 +1,1 @@
+# TODO: Make a local setup file to setup a wp-config without capistrano
