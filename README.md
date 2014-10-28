@@ -5,12 +5,12 @@ Framework for building and deploying Wordpress websites
 
 ## Start
 
-1. Put your WP core in /wp/
+1. Put your WP core in `/wp/`
 2. Run 'npm install gulp' to install gulp in your project.
 3. Run 'npm install' to install the dependencies
-4. Your assets are in /content/themes/v1/assets/ <- they'll be compiled to 'compiled-assets' by gulp.
-5. Setup your database and put your db info in /content/database.yml
-6. Run cap staging wp:setup:local to setup your wp-config locally.
+4. Your assets are in `/content/themes/v1/assets/` <- they'll be compiled to 'compiled-assets' by gulp.
+5. Setup your database and put your db info in `/content/database.yml`
+6. Run cap staging wp:setup:local to setup your `wp-config` locally.
 7. Run 'gulp' and enjoy!
 
 ## Assumptions
