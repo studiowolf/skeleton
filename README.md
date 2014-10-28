@@ -3,6 +3,16 @@
 Work in progress! But already here for your inspiration.
 Framework for building and deploying Wordpress websites
 
+## Start
+
+1. Put your WP core in /wp/
+2. Run 'npm install gulp' to install gulp in your project.
+3. Run 'npm install' to install the dependencies
+4. Your assets are in /content/themes/v1/assets/ <- they'll be compiled to 'compiled-assets' by gulp.
+5. Setup your database and put your db info in /content/database.yml
+6. Run cap staging wp:setup:local to setup your wp-config locally.
+7. Run 'gulp' and enjoy!
+
 ## Assumptions
 
 * Custom content directory in `/content/` (cleaner, and also because it can't be in `/wp/`)
@@ -24,5 +34,9 @@ cap staging media:regenerate (sync media)
 cap staging media:sync (sync media)
 
 
-## Interesting resources
-- https://github.com/pixline/wp-cli-php-devtools
+## Commandline interface for Wordpress
+A useful resource to use when you're developing WP sites is the WP commandline.
+You can find the install guide on http://wp-cli.org/
+The wp-cli.phar is already in this project so if you don't want to install it globally you can use this file to use the commandline.
+
+Run 'php wp-cli.phar --help' for the different usage options.
