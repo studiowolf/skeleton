@@ -133,8 +133,8 @@ namespace :deploy do
   desc "Check if git repositories are aligned"
   task :git_check_repository do
 
-    local_commit = %x(git rev-parse master).strip
-    remote_commit = %x(git rev-parse origin/master).strip
+    local_commit = %x(git rev-parse #{fetch(:branch)}).strip
+    remote_commit = %x(git rev-parse origin/#{fetch(:branch)}).strip
 
     if local_commit != remote_commit
 
