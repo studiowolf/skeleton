@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 namespace :wp do
 
   task :set_permissions do
@@ -29,10 +31,34 @@ namespace :wp do
         io = StringIO.new(db_config)
         upload! io, File.join(shared_path, "wp-config.php")
 
+        # Generate random password and htpasswd to password protect staging env
+        if environment == :staging
+          htpasswd = ERB.new(File.read('config/templates/.htpasswd.erb')).result(binding)
+          o = [(?a..?z), (?A..?Z)].map { |i| i.to_a }.flatten
+          password = (0...18).map { o[rand(o.length)] }.join
+          htaccesspass = Digest::MD5.hexdigest(password)
+          io = StringIO.new(htpasswd)
+          upload! io, File.join(shared_path, ".htpasswd")
+        end
+
         # Create .htaccess in remote environment
         accessfile = ERB.new(File.read('config/templates/.htaccess.erb')).result(binding)
         io = StringIO.new(accessfile)
         upload! io, File.join(shared_path, ".htaccess")
+
+        if environment == :staging
+        puts <<-MSG
+        \e[32m
+        ========================================================================
+          Your staging enviroment is protected, here are your logincredentials
+
+          Username:       studiowolf
+          Password:       #{password}
+        ========================================================================
+        \e[0m
+        MSG
+        end
+
       end
       # Set some permissions
       invoke 'wp:set_permissions'

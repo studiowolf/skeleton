@@ -48,6 +48,9 @@ namespace :deploy do
     on roles(:app) do
       execute :touch, "#{shared_path}/wp-config.php"
       execute :touch, "#{shared_path}/.htaccess"
+      if fetch(:stage) != :production then
+      execute :touch, "#{shared_path}/.htpasswd"
+      end
       execute :touch, "#{shared_path}/content/advanced-cache.php"
     end
   end
