@@ -1,28 +1,42 @@
 $ = require('jquery');
-modules = require('./modules');
+var modules = require('./modules');
 
 module.exports = {
-    // this is the the whole app initter
+
+    // Init the app
     blastoff: function () {
         var self = window.app = this;
 
-        // wait for document ready to start the Javascript
+        // Wait for document ready to start the Javascript
         // this ensures the document has a body, etc.
         $(function() {
 
-            // Load a module conditional by ID, ie:
-            // self.loadModuleConditional('navigation', 'js-navigation-wrapper');
+
+            self.loadModule({
+                'module': 'navigation',
+                'conditionalId': 'js-navigation'
+            });
+
+
+        });
+
+        // Wait for all recources to be loaded before executing this scripts
+        $(window).load(function() {
+
+
 
         });
     },
 
-    // Check if an element with a certain ID exists
-    // We use ID's here because its faster
-    loadModuleConditional: function(module, id) {
-        if(document.getElementById(id)) {
-            modules[module]();
+    // Load a specific module and give the possibility to use an
+    // optional element ID
+    loadModule: function(options) {
+
+        if(typeof options.conditionalId === 'undefined' ||
+            document.getElementById(options.conditionalId)) {
+                modules[options.module]();
+            }
         }
-    }
 };
 
 module.exports.blastoff();
