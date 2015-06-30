@@ -60,7 +60,7 @@ gulp.task('scripts', function() {
 gulp.task('images', function() {
   if(production) {
     return gulp.src('./content/themes/' + theme + '/assets/images/**/*')
-      //.pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
+      .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
       .pipe(gulp.dest('content/themes/' + theme + '/compiled-assets/images'));
   } else {
     return gulp.src('./content/themes/' + theme + '/assets/images/**/*')
