@@ -15,7 +15,8 @@ var gulp = require('gulp'),
     streamify = require('gulp-streamify'),
     gulpif = require('gulp-if'),
     source = require('vinyl-source-stream'),
-    browserSync = require('browser-sync');
+    browserSync = require('browser-sync'),
+    sourcemaps = require('gulp-sourcemaps');
 
 var production = false;
 
@@ -28,8 +29,9 @@ if(gutil.env.theme) {
 
 gulp.task('styles', function () {
   gulp.src('./content/themes/' + theme + '/assets/stylesheets/styles.scss')
-    //.pipe(sass({sourceComments: 'map', sourceMap: 'sass'}))
+    .pipe(sourcemaps.init())
     .pipe(sass())
+    .pipe(sourcemaps.write())
     .on('error', handleErrors)
     .pipe(autoprefixer({
       browsers: ['last 2 versions'],
