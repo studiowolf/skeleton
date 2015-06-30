@@ -82,7 +82,7 @@ gulp.task('server', shell.task([
 
 // Start browser sync
 gulp.task('browser-sync', function() {
-    browserSync({
+    browserSync.init({
         proxy: '127.0.0.1:8000',
         xip: true,
         notify: false
