@@ -1,7 +1,7 @@
 # Website Skeleton
 
 Work in progress! But already here for your inspiration.
-Framework for building and deploying Wordpress websites
+Framework for building and deploying WordPress websites
 
 ## Start
 
@@ -34,7 +34,7 @@ cap staging media:regenerate (sync media)
 cap staging media:sync (sync media)
 
 
-## Commandline interface for Wordpress
+## Commandline interface for WordPress
 A useful resource to use when you're developing WP sites is the WP commandline.
 You can find the install guide on http://wp-cli.org/
 The wp-cli.phar is already in this project so if you don't want to install it globally you can use this file to use the commandline.
