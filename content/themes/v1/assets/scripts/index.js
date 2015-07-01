@@ -13,8 +13,8 @@ module.exports = {
 
 
             self.loadModule({
-                'module': 'navigation',
-                'conditionalId': 'js-navigation'
+                'module': 'navigation'
+                // ,'conditionalId': 'js-navigation'
             });
 
 

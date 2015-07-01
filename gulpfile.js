@@ -17,7 +17,9 @@ var gulp = require('gulp'),
     source = require('vinyl-source-stream'),
     browserSync = require('browser-sync'),
     sourcemaps = require('gulp-sourcemaps'),
-    babelify = require("babelify");
+    babelify = require('babelify'),
+    plumber = require('gulp-plumber'),
+    watch = require('gulp-watch');
 
 var production = false;
 
@@ -30,22 +32,23 @@ if(gutil.env.theme) {
 
 gulp.task('styles', function () {
   gulp.src('./content/themes/' + theme + '/assets/stylesheets/styles.scss')
+    .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(sass())
     .pipe(sourcemaps.write())
-    .on('error', handleErrors)
     .pipe(autoprefixer({
       browsers: ['last 2 versions'],
       cascade: false
     }))
     // IE7/8 CSS support is disbabled on default!
     .pipe(gulpif(production, minifycss({'noAdvanced': true})))
+    .pipe(plumber.stop())
     .pipe(gulp.dest('content/themes/' + theme + '/compiled-assets/stylesheets'))
     .pipe(filter('**/*.css')) // Filtering stream to only css files
     .pipe(browserSync.reload({stream: true}));
 });
 
-// @TODO: zorgen dat deze niet crasht bij een JS foutje
+
 gulp.task('scripts', function() {
   return browserify('./content/themes/' + theme + '/assets/scripts/index.js', {insertGlobals: true, debug: !production})
     .transform(babelify)
@@ -136,10 +139,8 @@ gulp.task('watch', ['images', 'fonts', 'scripts', 'styles'], function() {
 
 });
 
-
-var handleErrors = function() {
-
-      var args = Array.prototype.slice.call(arguments);
+function handleErrors(){
+  var args = Array.prototype.slice.call(arguments);
 
       // Send error to notification center with gulp-notify
       notify.onError({
