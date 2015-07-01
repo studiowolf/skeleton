@@ -16,7 +16,8 @@ var gulp = require('gulp'),
     gulpif = require('gulp-if'),
     source = require('vinyl-source-stream'),
     browserSync = require('browser-sync'),
-    sourcemaps = require('gulp-sourcemaps');
+    sourcemaps = require('gulp-sourcemaps'),
+    babelify = require("babelify");
 
 var production = false;
 
@@ -46,11 +47,9 @@ gulp.task('styles', function () {
 
 // @TODO: zorgen dat deze niet crasht bij een JS foutje
 gulp.task('scripts', function() {
-  return browserify('./content/themes/' + theme + '/assets/scripts/index.js')
-    .bundle({
-      insertGlobals : true,
-      debug: !production
-    })
+  return browserify('./content/themes/' + theme + '/assets/scripts/index.js', {insertGlobals: true, debug: !production})
+    .transform(babelify)
+    .bundle()
     .on('error', handleErrors)
     .pipe(source('bundle.js'))
     .pipe(gulpif(production, streamify(uglify())))
